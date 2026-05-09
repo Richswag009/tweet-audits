@@ -1,5 +1,13 @@
 package org.richcodes;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import org.richcodes.enums.ParserType;
+import org.richcodes.model.Tweet;
+import org.richcodes.model.TweetWrapper;
+import org.richcodes.storage.TweetParser;
+
+import java.util.List;
+
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
@@ -10,7 +18,7 @@ public class Main {
     private Main() {
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws JsonProcessingException {
         if(args.length == 0){
             printUsage();
             return;
@@ -24,7 +32,22 @@ public class Main {
         }
 
 
+        switch (command) {
+            case EXTRACT_TWEETS_COMMAND -> executeExtractTweets();
+            case ANALYZE_TWEETS_COMMAND -> executeAnalyzeTweets();
+        }
 
+
+    }
+
+    private static void executeAnalyzeTweets() {
+
+    }
+    
+    private static void executeExtractTweets() throws JsonProcessingException {
+        String path= "data/tweets/tweets.js";
+        TweetParser tweetParser = new TweetParser(path,ParserType.CSV);
+        tweetParser.parse();
     }
 
     private static void printUsage() {
