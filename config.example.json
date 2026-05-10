@@ -1,0 +1,15 @@
+{
+  "criteria": {
+    "forbidden_words": ["crypto", "NFT","Sex"],
+    "topics_to_exclude": [
+      "Profanity or unprofessional language",
+      "Personal attacks or insults",
+      "Outdated political opinions"
+    ],
+    "tone_requirements": [
+      "Professional language only",
+      "Respectful communication"
+    ],
+    "additional_instructions": "Flag any content that could harm professional reputation"
+  }
+}
