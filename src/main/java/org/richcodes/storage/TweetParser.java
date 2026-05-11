@@ -34,23 +34,6 @@ public class TweetParser {
         this.parserType = parserType;
     }
 
-    public List<Tweet> parses(){
-        System.out.println("Parsing tweets oooo...");
-        System.out.println("path: " +  this.path);
-
-        try{
-            String content = Files.readString(this.path);
-            System.out.println("json: " +  content);
-        } catch (IOException e) {
-            System.out.println("Error reading file");
-//            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
-        System.out.println("parserType: " + this.parserType.toString());
-        return new ArrayList<>();
-    }
-
-
     public String readContent() {
         try {
             InputStream inputStream = getClass()

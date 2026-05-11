@@ -5,25 +5,26 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.genai.Client;
 import org.richcodes.model.AnalysisResult;
 
+import java.util.Set;
+
 public class GeminiAnalyser {
 
-
-    private final Client client;
-    private final GeminiService geminiService;
+    private static final Set<String> RETRYABLE_CODES = Set.of("429", "503", "504");
+    private Client client = new Client();
+    private final GeminiService geminiService  = new GeminiService(client);
     private final RetryPolicy retryPolicy;
 
     public GeminiAnalyser( RetryPolicy retryPolicy ) {
         this.retryPolicy=retryPolicy;
-        String apiKey = System.getenv("GEMINI_API_KEY");
+        String apiKey = System.getenv("GOOGLE_API_KEY");
         if (apiKey == null || apiKey.isBlank()) {
-            throw new IllegalStateException("GEMINI_API_KEY not set");
+            throw new IllegalStateException("GOOGLE_API_KEY not set");
         }
         this.client = Client.builder().apiKey(apiKey).build();
-        this.geminiService = new GeminiService(client);
     }
 
 
-    public String geminiAnalyser( String tweetText) throws Exception {
+    public String geminiAnalyser(String tweetText) throws Exception {
         String prompt = buildResponse(tweetText);
         return retryPolicy.retryPolicy(()-> {
             try {

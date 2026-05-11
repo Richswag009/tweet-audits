@@ -26,7 +26,6 @@ public class CSVWriter implements AutoCloseable{
         skipHeader = shouldAppend && exists;
         writer = new BufferedWriter(new FileWriter(path.toFile()));
 
-        System.out.println("getting parent " + parent);
     }
 
 
@@ -36,6 +35,9 @@ public class CSVWriter implements AutoCloseable{
         }
         return new CSVWriter(Paths.get(path),shouldAppend);
     }
+    
+
+
 
     public static  void  writeList(List<Tweet> tweets) throws IOException {
 

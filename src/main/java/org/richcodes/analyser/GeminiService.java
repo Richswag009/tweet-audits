@@ -1,6 +1,7 @@
 package org.richcodes.analyser;
 
 import com.google.genai.Client;
+import com.google.genai.errors.ClientException;
 import com.google.genai.types.GenerateContentResponse;
 
 public class GeminiService implements GeminiClient {
@@ -16,8 +17,18 @@ public class GeminiService implements GeminiClient {
         if(content == null || content.isBlank()) {
             throw new Exception("content is empty");
         }
-        return client.models
-                .generateContent("gemini-2.5-flash-lite", content, null)
-                .text();
+
+        try{
+            GenerateContentResponse response =
+                    client.models.generateContent(
+                            "gemini-2.5-flash",
+                            content,
+                            null
+                    );
+            return response.text();
+        } catch (Exception e) {
+            System.out.println("error generating content: " + e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 }
