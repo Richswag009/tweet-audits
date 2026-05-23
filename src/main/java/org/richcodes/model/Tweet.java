@@ -13,6 +13,4 @@ public record Tweet(
         String text,
         @JsonProperty("created_at")
         String createdAt
-
-
 ){}

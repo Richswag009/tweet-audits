@@ -1,29 +1,15 @@
 package org.richcodes;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.genai.Client;
-import org.richcodes.analyser.GeminiAnalyser;
-import org.richcodes.analyser.GeminiClient;
-import org.richcodes.analyser.GeminiService;
-import org.richcodes.analyser.RetryPolicy;
-import org.richcodes.enums.ParserType;
-import org.richcodes.model.AnalysisResult;
-import org.richcodes.model.Tweet;
-import org.richcodes.model.TweetWrapper;
-import org.richcodes.storage.CSVFileReader;
-import org.richcodes.storage.CSVWriter;
-import org.richcodes.storage.TweetParser;
+import org.richcodes.application.TweetPipeline;
+import org.richcodes.config.Config;
+import org.richcodes.storage.ConfigLoader;
 
-import java.io.IOException;
-import java.util.List;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
 
     private static final String EXTRACT_TWEETS_COMMAND = "extract-tweets";
     private static final String ANALYZE_TWEETS_COMMAND = "analyze-tweets";
-    private static final CSVWriter csvWriter = null;
+
     private Main() {
     }
 
@@ -32,55 +18,62 @@ public class Main {
             printUsage();
             return;
         }
-
         String command = args[0];
+        int batchSize = parseBatchSize(args);
+
         if(!command.equals(EXTRACT_TWEETS_COMMAND ) && !command.equals(ANALYZE_TWEETS_COMMAND)){
             System.err.println("Error: Unknown command '" + command + "'");
             printUsage();
             System.exit(1);
         }
 
-        switch (command) {
-            case EXTRACT_TWEETS_COMMAND -> executeExtractTweets();
-            case ANALYZE_TWEETS_COMMAND -> executeAnalyzeTweets();
+        try {
+            ConfigLoader configLoader = new ConfigLoader();
+            Config config = configLoader.load();
+            TweetPipeline tweetPipeline=  new TweetPipeline(config);
+
+            switch (command) {
+                case EXTRACT_TWEETS_COMMAND -> executeExtractTweets(tweetPipeline);
+                case ANALYZE_TWEETS_COMMAND -> executeAnalyzeTweets(tweetPipeline);
+            };
+
+        }catch (Exception e){
+            System.err.println("Error: " + e.getMessage());
         }
     }
 
-    private static void executeAnalyzeTweets() throws Exception {
-
-        RetryPolicy retryPolicy = new RetryPolicy();
-        GeminiAnalyser analyser = new GeminiAnalyser(retryPolicy);
-        CSVFileReader reader = new CSVFileReader("data/tweets/transformed/tweets.csv");
-
-// then read
-        List<Tweet> tweets = reader.readAll();
-
-
-//        String result = analyser.geminiAnalyser(tweetText);
-//        String result1 = analyser.geminiAnalyser(tweetText1);
-//        System.out.println(result);
-//        System.out.println(result1);
+    private static void executeAnalyzeTweets(TweetPipeline tweetPipeline) throws Exception {
+        System.out.println("Executing analyze-tweets ....");
+        tweetPipeline.analyze();
+        System.out.println("analyze-tweets done.");
     }
 
-
-
-    private static void executeExtractTweets() throws Exception {
-        String path= "data/tweets/tweets.js";
-        TweetParser tweetParser = new TweetParser(path,ParserType.CSV);
-        tweetParser.parse();
-        CSVWriter.create("data/tweets/transformed/tweets.csv",false);
-        CSVWriter.writeList(tweetParser.parse());
-        executeAnalyzeTweets();
-
-
+    private static void executeExtractTweets(TweetPipeline tweetPipeline) throws Exception {
+        tweetPipeline.extract();
     }
 
     private static void printUsage() {
-        System.out.println("Usage: tweet-audit <command>");
+        System.out.println("Usage: tweet-audit <command> [options]");
         System.out.println();
         System.out.println("Commands:");
-        System.out.println("  extract-tweets  Extract tweets from Twitter archive");
-        System.out.println("  analyze-tweets  Analyze tweets using Gemini AI");
+        System.out.println("  extract-tweets                    Extract tweets from Twitter archive");
+        System.out.println("  analyze-tweets                    Analyze tweets using Gemini AI");
+        System.out.println();
+        System.out.println("Options:");
+        System.out.println("  --batch-size=<n>                  Number of tweets per batch (default: 3)");
+        System.out.println();
+        System.out.println("Examples:");
+        System.out.println("  tweet-audit analyze-tweets");
+        System.out.println("  tweet-audit analyze-tweets --batch-size=5");
+    }
+
+    private static int parseBatchSize(String[] args) {
+        for (int i = 1; i < args.length; i++) {
+            if (args[i].startsWith("--batch-size=")) {
+                return Integer.parseInt(args[i].split("=")[1]);
+            }
+        }
+        return 3;
     }
 
 }

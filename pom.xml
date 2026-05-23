@@ -43,6 +43,14 @@
             <version>2.0.9</version>
         </dependency>
 
+        <!-- Source: https://mvnrepository.com/artifact/com.diffplug.spotless/spotless-maven-plugin -->
+<!--        <dependency>-->
+<!--            <groupId>com.diffplug.spotless</groupId>-->
+<!--            <artifactId>spotless-maven-plugin</artifactId>-->
+<!--            <version>3.4.0</version>-->
+<!--            <scope>compile</scope>-->
+<!--        </dependency>-->
+
     </dependencies>
 
     <build>
@@ -69,6 +77,23 @@
                 <version>3.1.0</version>
                 <configuration>
                     <mainClass>org.richcodes.Main</mainClass>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>2.46.1</version>
+                <configuration>
+                    <java>
+                        <importOrder>
+                            <order>java,javax,org,com</order>
+                        </importOrder>
+                        <removeUnusedImports/>
+                        <googleJavaFormat/>
+                        <trimTrailingWhitespace/>
+                        <formatAnnotations/>
+                    </java>
                 </configuration>
             </plugin>
 

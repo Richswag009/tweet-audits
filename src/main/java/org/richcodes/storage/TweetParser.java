@@ -51,7 +51,6 @@ public class TweetParser {
             if (start == -1) {
                 throw new RuntimeException("Tweet data marker not found");
             }
-
             return content.substring(start + marker.length());
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -38,3 +38,4 @@ data/
 
 ### Mac OS ###
 .DS_Store
+config.json

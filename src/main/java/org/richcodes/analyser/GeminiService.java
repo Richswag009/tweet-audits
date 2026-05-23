@@ -21,14 +21,14 @@ public class GeminiService implements GeminiClient {
         try{
             GenerateContentResponse response =
                     client.models.generateContent(
-                            "gemini-2.5-flash",
+                            "gemma-4-26b-a4b-it",
                             content,
                             null
                     );
             return response.text();
         } catch (Exception e) {
             System.out.println("error generating content: " + e.getMessage());
-            throw new RuntimeException(e);
+            throw (e);
         }
     }
 }

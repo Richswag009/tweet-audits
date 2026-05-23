@@ -7,9 +7,9 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 public class RetryPolicy {
-    private final int DEFAULT_MAX_RETRIES = 3;
-    private final int DEFAULT_BASE_TIMEOUT = 37000; // milliseconds
-    private final  int DEFAULT_BACKOFF_FACTOR = 2;
+    private static final int DEFAULT_MAX_RETRIES = 3;
+    private static final int DEFAULT_BASE_TIMEOUT = 37000; // milliseconds
+    private  static  final  int DEFAULT_BACKOFF_FACTOR = 2;
     private final int maxRetries;
     private final int baseTimeout;
     private final int backoffFactor;
@@ -33,7 +33,7 @@ public class RetryPolicy {
 
 
 
-    public String retryPolicy(Supplier<String> action) throws Exception {
+    public <T> T  retryPolicy(ThrowingSupplier<T>  action) throws Exception {
         int retries = 0;
 
         while (retries < maxRetries) {
@@ -42,7 +42,7 @@ public class RetryPolicy {
                 return action.get();
 
             }catch (Exception e) {
-                if (!isRetryable(e.getMessage())) {
+                if (!isRetryable(e)) {
                     throw e;
                 }
                 System.out.println("Attempt " + (retries + 1) + " of " + maxRetries + " failed");
@@ -50,7 +50,7 @@ public class RetryPolicy {
 
                 if(retries < maxRetries) {
                     int backoff = calculateBackOffTime(retries);
-                    System.out.println( "Retrying in " + backoff + " milliseconds" );
+                    System.out.println( "Please retry in " + backoff + " milliseconds" );
                     Thread.sleep(backoff);
                 }else{
                     System.out.println("Max retries reached");
@@ -68,7 +68,11 @@ public class RetryPolicy {
     }
 
 
-    private boolean isRetryable(String message) {
+    private boolean isRetryable(Exception e) {
+        String message = e.getCause() != null
+                ? e.getCause().getMessage()
+                : e.getMessage();
+        if (message == null) return false;
         return RETRYABLE_CODES.stream()
                 .anyMatch(message::startsWith);
     }

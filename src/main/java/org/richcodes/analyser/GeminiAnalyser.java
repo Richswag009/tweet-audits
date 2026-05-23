@@ -5,48 +5,39 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.genai.Client;
 import org.richcodes.model.AnalysisResult;
 
-import java.util.Set;
 
 public class GeminiAnalyser {
 
-    private static final Set<String> RETRYABLE_CODES = Set.of("429", "503", "504");
-    private Client client = new Client();
-    private final GeminiService geminiService  = new GeminiService(client);
+    private Client client;
+    private final GeminiService geminiService;
     private final RetryPolicy retryPolicy;
+    private final ObjectMapper mapper = new ObjectMapper();
 
     public GeminiAnalyser( RetryPolicy retryPolicy ) {
-        this.retryPolicy=retryPolicy;
+
         String apiKey = System.getenv("GOOGLE_API_KEY");
         if (apiKey == null || apiKey.isBlank()) {
             throw new IllegalStateException("GOOGLE_API_KEY not set");
         }
         this.client = Client.builder().apiKey(apiKey).build();
+        this.geminiService = new GeminiService(client);
+        this.retryPolicy=retryPolicy;
     }
 
-
-    public String geminiAnalyser(String tweetText) throws Exception {
+    public AnalysisResult geminiAnalyser(String tweetText) throws Exception {
         String prompt = buildResponse(tweetText);
-        return retryPolicy.retryPolicy(()-> {
-            try {
-                return String.valueOf(cleanResponse(geminiService.generateContent(prompt)));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
+        return retryPolicy.retryPolicy(() ->
+                cleanResponse(geminiService.generateContent(prompt))
+        );
     }
-
-
 
     private AnalysisResult cleanResponse(String response) throws JsonProcessingException {
         String clean = response
                 .replace("```json", "")
                 .replace("```", "")
                 .trim();
-
-        ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(clean, AnalysisResult.class);
     }
-
 
     private String buildResponse (String tweetText){
         String content = """
